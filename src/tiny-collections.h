@@ -3,10 +3,18 @@
 #ifndef _TINY_COLLECTIONS_H_
 #define _TINY_COLLECTIONS_H_
 
-#include<stddef.h>
-#include<new>
-#include<initializer_list>
+#include<stddef.h> // For size_t
 #include<type_traits>
+
+#ifdef __AVR__
+// Define std::initializer_list<T> ourselves.
+#include "tc/tc_initializer_list.h"
+#else // ! __AVR__
+// Use GCC stdlib
+#include<initializer_list>
+#endif // __AVR__
+
+#include "tc/tc_new.h"
 
 namespace tc {
 

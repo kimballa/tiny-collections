@@ -27,7 +27,7 @@ lib_name := tinycollections
 #libs := wire
 
 # List all directories of source files. The current directory '.' is included by default.
-src_dirs := src
+src_dirs := src src/tc
 
 # Add further include or lib paths with:
 # include_dirs += (dir1) (dir2) (dir3)...
