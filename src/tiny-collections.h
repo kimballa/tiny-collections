@@ -4,17 +4,17 @@
 #define _TINY_COLLECTIONS_H_
 
 #include<stddef.h> // For size_t
-#include<type_traits>
 
 #ifdef __AVR__
 // Define std::initializer_list<T> ourselves.
 #include "tc/tc_initializer_list.h"
 #else // ! __AVR__
-// Use GCC stdlib
+// Use g++ stdlib
 #include<initializer_list>
 #endif // __AVR__
 
 #include "tc/tc_new.h"
+#include "tc/tc_type_traits.h"
 
 namespace tc {
 
@@ -214,7 +214,7 @@ namespace tc {
     void reserve(size_t minCapacity) { _ensure_capacity(minCapacity - 1); };
 
     void clear() {
-      if constexpr(!std::is_scalar<T>::value) {
+      if constexpr(!tc_is_scalar<T>::value()) {
         for (size_t i = 0; i < _count; i++) {
           // Explicitly call destructor for each item one-by-one.
           _data[i].~T();
@@ -314,7 +314,7 @@ namespace tc {
         return; // Nothing to do.
       }
 
-      if constexpr(!std::is_scalar<T>::value) {
+      if constexpr(!tc_is_scalar<T>::value()) {
         for (size_t i = 0; i < _count; i++) {
           // Explicitly call destructor for each item one-by-one.
           _data[i].~T();
