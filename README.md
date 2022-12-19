@@ -216,11 +216,13 @@ public:
 Compatibility
 =============
 
-This library has no hardware-specific requirements or constraints on its usage. This code
-does depend on some C++ STL backing capabilities (like `std::initializer_list<T>`), so
-the relevant C++ STL header files must be present. Any architectures using `arm-none-eabi-gcc`
-should work; `avr-gcc` does not unless you manually import the relevant C++ header files from
-elsewhere.
+This library has no hardware-specific requirements or constraints on its usage. This
+should be compatible with any modern `g++` or `avr-g++` implementation or MCU.
+
+While most dependencies from the C++ STL have been eliminated, some are unavoidable,
+like `std::initializer_list<T>`.  A port of `std::initializer_list<T>` is included and used if
+the `__AVR__` preprocessor macro is defined. You should not otherwise include
+`tc/tc_initializer_list.h` yourself.
 
 License
 -------
