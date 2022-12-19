@@ -213,6 +213,15 @@ public:
 };
 ```
 
+Compatibility
+=============
+
+This library has no hardware-specific requirements or constraints on its usage. This code
+does depend on some C++ STL backing capabilities (like `std::initializer_list<T>`), so
+the relevant C++ STL header files must be present. Any architectures using `arm-none-eabi-gcc`
+should work; `avr-gcc` does not unless you manually import the relevant C++ header files from
+elsewhere.
+
 License
 -------
 
