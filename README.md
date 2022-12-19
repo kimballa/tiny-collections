@@ -13,16 +13,16 @@ Classes
 -------
 
 This library includes stripped down versions of STL template classes that may be useful
-for embedded programming where compiled code space is at a premium. 
+for embedded programming where compiled code space is at a premium.
 
-* **tc::vector<T>** - A variable-length, array-backed collection of elements of type `T` 
+* **tc::vector&lt;T&gt;** - A variable-length, array-backed collection of elements of type `T`
   with O(1) random and sequential access, O(1) item-append time, and O(n) mid-list
-  insertion time. If necessary, the backing array may be resized by allocating a larger 
+  insertion and removal time. If necessary, the backing array may be resized by allocating a larger
   array and relocating existing elements with `memmove()`.
-* **tc::const_array<T>** - A fixed-length immutable array of `const` items of type `T`
+* **tc::const_array&lt;T&gt;** - A fixed-length immutable array of `const` items of type `T`
   Like `vector`, this class supports indexed access, iteration, and reporting on its size.
-  Since access is only given to elements as `const T&`, and the `const_array` class does 
-  not assume ownership of the `T` elements (i.e., its destructor will not call `~T()` on 
+  Since access is only given to elements as `const T&`, and the `const_array` class does
+  not assume ownership of the `T` elements (i.e., its destructor will not call `~T()` on
   its elements) this can be created as a `constexpr` object that wraps a brace-initialized
   list of items.
 
@@ -32,6 +32,25 @@ Usage
 Both classes are in the `tc` namespace. You should refer to the fully-qualified class name
 (`tc::vector<T>`) or include the statement `using namespace tc;` after including the
 library.
+
+These classes never deliberately `throw` any exception. Indexed dereference
+(`myVector[i]`) is an unchecked operation performed directly against the underlying array.
+* Dereference of an index greater than or equal to `size()` (or less than 0) is undefined
+  behavior.
+* Because it does not include any methods that throw exceptions, this does not include the
+  `std::vector<T>::at(size_t i)` function that performs checked element access. Instead, use
+  `bool tc::vector<T>::in_range(size_t i)` to check whether it is safe to access the
+  `i`'th element.
+
+Because these are template classes, including this library has no immediate impact on
+compiled code size. However, each distinct template instantiation (`vector<int>`,
+`vector<long>`, `vector<String>`, etc...) will generate additional code and compiled
+sketch size. Only the methods you use/need will be included in the final compiled sketch;
+e.g. if you never use the `erase()` method in a particular instantiation of `vector<T>`,
+its code will not add any size to your compiled sketch.
+
+Example
+-------
 
 ```
 #include <Arduino.h>
@@ -49,7 +68,7 @@ void useImmutableArray() {
   //
   //   Fixed array includes 4 items:
   //   1 2 3 4
-  
+
   Serial.print("Fixed array includes ");
   Serial.print(myFixedArray.size());
   Serial.println(" items:");
@@ -82,7 +101,7 @@ void setup() {
   Serial.println(someStrings[0]); // dereference works like an array.
 
   // Alternate iteration interface using 'foreach' syntax.
-  Serial.println("All strings:")
+  Serial.println("All strings:");
   for (auto str: someStrings) {
     Serial.println(str);
   }
@@ -98,11 +117,12 @@ void loop() {
 Interface
 ---------
 
-### tc::const\_array<T>
+### tc::const\_array&lt;T&gt;
 
 ```
 template<typename T> class const_array {
 public:
+  /** Construct a zero-length array. */
   constexpr const_array();
 
   /** Copy constructor. */
@@ -140,7 +160,7 @@ public:
 
 ```
 
-### tc::vector<T>
+### tc::vector&lt;T&gt;
 
 ```
 template<typename T> class vector {
