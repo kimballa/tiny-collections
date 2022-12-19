@@ -52,7 +52,7 @@ its code will not add any size to your compiled sketch.
 Example
 -------
 
-```
+```c++
 #include <Arduino.h>
 #include <tiny-collections.h>
 
@@ -119,7 +119,7 @@ Interface
 
 ### tc::const\_array&lt;T&gt;
 
-```
+```c++
 template<typename T> class const_array {
 public:
   /** Construct a zero-length array. */
@@ -162,7 +162,7 @@ public:
 
 ### tc::vector&lt;T&gt;
 
-```
+```c++
 template<typename T> class vector {
 public:
   vector();
