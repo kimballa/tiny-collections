@@ -177,7 +177,7 @@ namespace tc {
       return *this;
     };
 
-    // Copy operator: duplicate the elements of a const_array<T<>
+    // Copy operator: duplicate the elements of a const_array<T>
     vector<T> &operator=(const const_array<T> &copy_src) {
       _deallocate(); // free existing _data (if any) first.
 
