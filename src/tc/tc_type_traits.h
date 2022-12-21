@@ -27,14 +27,14 @@ namespace tc {
     // Since there are only two possibilities for exprVal, and false is specialized below,
     // the 'more generic' version of this template is always/only used for exprVal == true.
     using type = ifTrue;
-    constexpr static bool value() { return exprVal; };
+    constexpr static bool value() { return type::value(); };
   };
 
   // When specialized on exprVal==false, tc_conditional::type uses the ifFalse type.
   template<typename ifTrue, typename ifFalse> class tc_conditional<false, ifTrue, ifFalse> {
   public:
     using type = ifFalse;
-    constexpr static bool value() { return false; };
+    constexpr static bool value() { return type::value(); };
   };
 
   // Conjunction: AND over N different clauses. (a /\ b /\ c /\ ...)

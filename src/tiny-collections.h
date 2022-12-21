@@ -4,6 +4,7 @@
 #define _TINY_COLLECTIONS_H_
 
 #include<stddef.h> // For size_t
+#include<string.h> // For memmove()
 
 #ifdef __AVR__
 // Define std::initializer_list<T> ourselves.
