@@ -13,27 +13,93 @@ using std::string;
 static int testFailures = 0;
 static int testRuns = 0;
 
-static void evalTestcase(const string &testName, bool expectedValue, bool actualValue) {
+// Log that a test case failed.
+static void failCase() {
   testRuns++;
+  testFailures++;
+  cout << ": *** FAILED ***" << endl;
+}
 
+// Log that a test case passed.
+static void passCase() {
+  testRuns++;
+  cout << ": OK" << endl;
+}
+
+template<typename T> static void evalTestcase(const string &testName, T expectedValue, T actualValue) {
   cout << testName << ": (expected=" << expectedValue << ", actual=" << actualValue << ")";
   if (expectedValue != actualValue) {
-    testFailures++;
-    cout << ": *** FAILED ***" << endl;
+    failCase();
   } else {
-    cout << ": OK" << endl;
+    passCase();
   }
 }
 
-int main(int argc, char **argv) {
-  cout << std::boolalpha; // pretty-print 'true' and 'false'.
+template<typename T> static void expectEqual(const string &testName, T expectedValue, T actualValue) {
+  evalTestcase(testName, expectedValue, actualValue);
+}
 
-  // reinitialize counters.
-  testFailures = 0;
-  testRuns = 0;
+template<typename T> static void expectNotEqual(const string &testName, T stockValue, T actualValue) {
+  cout << testName << ": (expected !=" << stockValue << ", actual=" << actualValue << ")";
+  if (stockValue == actualValue) {
+    failCase();
+  } else {
+    passCase();
+  }
+}
 
-  cout << "Test suite start" << endl;
-  cout << "================================" << endl;
+template<typename T> static void expectGreater(const string &testName, T stockValue, T actualValue) {
+  cout << testName << ": (expected >" << stockValue << ", actual=" << actualValue << ")";
+  if (actualValue > stockValue) {
+    passCase();
+  } else {
+    failCase();
+  }
+}
+
+template<typename T> static void expectGreaterOrEqual(
+    const string &testName, T stockValue, T actualValue) {
+
+  cout << testName << ": (expected >=" << stockValue << ", actual=" << actualValue << ")";
+  if (actualValue >= stockValue) {
+    passCase();
+  } else {
+    failCase();
+  }
+}
+
+template<typename T> static void expectLess(const string &testName, T stockValue, T actualValue) {
+  cout << testName << ": (expected <" << stockValue << ", actual=" << actualValue << ")";
+  if (actualValue < stockValue) {
+    passCase();
+  } else {
+    failCase();
+  }
+}
+
+template<typename T> static void expectLessOrEqual(
+    const string &testName, T stockValue, T actualValue) {
+
+  cout << testName << ": (expected <=" << stockValue << ", actual=" << actualValue << ")";
+  if (actualValue <= stockValue) {
+    passCase();
+  } else {
+    failCase();
+  }
+}
+
+static int numSuites = 0;
+static void startTestSuite(const string &suiteName) {
+  if (numSuites > 0) {
+    cout << endl;
+  }
+  cout << "Test suite start: " << suiteName << endl;
+  cout << "=============================================" << endl;
+  numSuites++;
+}
+
+void testTypeTraits() {
+  startTestSuite("Type Traits");
   evalTestcase("True type value", true, tc_true_type::value());
   evalTestcase("False type value", false, tc_false_type::value());
 
@@ -138,8 +204,81 @@ int main(int argc, char **argv) {
   evalTestcase("IsScalar(enum fooEnum)", true, tc_is_scalar<fooEnum>::value());;
   evalTestcase("IsScalar(nullptr_t)", true, tc_is_scalar<nullptr_t>::value());;
   evalTestcase("IsScalar(const nullptr_t)", true, tc_is_scalar<const nullptr_t>::value());;
+}
 
-  cout << endl;
+void testVector() {
+  startTestSuite("Vector");
+
+  vector<int> intVec;
+  expectEqual("Start vec size", (size_t)0, intVec.size());
+  expectGreaterOrEqual("vec cap >= size", intVec.size(), intVec.capacity());
+  intVec.push_back(42);
+  expectEqual("1 item vec size", (size_t)1, intVec.size());
+  expectEqual("first item deref", 42, intVec[0]);
+  intVec.push_back(211);
+  intVec.push_back(312);
+  expectEqual("first item deref #2", 42, intVec[0]); // Doesn't change.
+  expectEqual("third item deref", 312, intVec[2]); // Correct item.
+  intVec[2] = 411;
+  expectEqual("reassigned third item", 411, intVec[2]); // Correct overwrite.
+  expectEqual("first item deref #3", 42, intVec[0]); // Doesn't change.
+  intVec.clear();
+  expectEqual("Cleared vec size", (size_t)0, intVec.size());
+
+  vector<string> stringVec;
+  expectEqual("String vec start size", (size_t)0, stringVec.size());
+  stringVec.push_back(string("meep"));
+  expectEqual("First String", string("meep"), stringVec[0]);
+  stringVec[0] = "boop";
+  expectEqual("Reassigned first string", string("boop"), stringVec[0]);
+  stringVec.push_back("foo");
+  stringVec.push_back("bar");
+  // Add enough strings that this triggers a reallocate.
+  for (int i = 0; i < 10; i++) {
+    stringVec.push_back("abc");
+  }
+
+  expectEqual("13 item size", (size_t)13, stringVec.size());
+  expectGreaterOrEqual("13 item cap > size", stringVec.size(), stringVec.capacity());
+  expectEqual("moved first item", string("boop"), stringVec[0]);
+  expectEqual("moved third item", string("bar"), stringVec[2]);
+
+  vector<string> newStringVec;
+  expectEqual("New string vec start size", (size_t)0, newStringVec.size());
+  newStringVec = stringVec;
+  expectEqual("New string vec post-assign size", stringVec.size(), newStringVec.size());
+  expectEqual("New string vec post-assign size #2", (size_t)13, newStringVec.size());
+  expectGreaterOrEqual("New string vec post-assign cap", newStringVec.size(), newStringVec.capacity());
+  expectEqual("New string vec first elem", string("boop"), newStringVec[0]);
+  expectEqual("Old string vec first elem", string("boop"), stringVec[0]);
+
+  vector<long> longVec = {1, 2, 3, 4};
+  expectEqual("brace-initialized vector size", (size_t)4, longVec.size());
+  expectGreaterOrEqual("brace-initialized vector capacity", longVec.size(), longVec.capacity());
+  expectEqual("first long", (long)1, longVec[0]);
+  expectEqual("last long", (long)4, longVec[3]);
+
+  vector<long> longVecCopy(longVec);
+  expectEqual("copy of brace-initialized vector size", (size_t)4, longVecCopy.size());
+  expectEqual("copy of brace-initialized vector 1st val", (long)1, longVecCopy[0]);
+  longVecCopy[2] = -42;
+  expectEqual("Modified copy[2] = -42", (long)-42, longVecCopy[2]);
+  expectEqual("Original copy[2] = 3", (long)3, longVec[2]); // shouldn't change.
+
+
+}
+
+int main(int argc, char **argv) {
+  cout << std::boolalpha; // pretty-print 'true' and 'false'.
+
+  // reinitialize counters.
+  testFailures = 0;
+  testRuns = 0;
+  numSuites = 0;
+
+  testTypeTraits();
+  testVector();
+
   cout << "Ran " << testRuns << " test cases." << endl;
   if (testFailures == 0) {
     cout << "Tests PASSED" << endl;
