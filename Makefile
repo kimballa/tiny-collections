@@ -46,3 +46,9 @@ include ../arduino-makefile/arduino.mk
 
 # Use `make config` to inspect the build configuration.
 # Use `make help` to see a list of available targets.
+
+# Add support for our local unit test suite
+test: library
+	$(MAKE) -C test all
+
+.PHONY: test
