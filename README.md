@@ -9,6 +9,9 @@ Compiling
 
 Compilation is not necessary; just `#include <tiny-collections.h>` in your code.
 
+Unit tests exist in the `test/` subdir. Run `make test` in this directory to run
+the unit test suite.
+
 Classes
 -------
 
