@@ -51,7 +51,7 @@ void setup() {
     Serial.println(str);
   }
 
-  useConstantArray();
+  useImmutableArray();
 }
 
 void loop() {
