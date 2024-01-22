@@ -6,7 +6,7 @@ using namespace tc; // Import tc::* into the global namespace
 // Create a const int array and wrap it in a useful interface.
 // This is similar to declaring `const int myFixedArray[4] = { 1, 2, 3, 4 };`
 // but lets you use methods like `size()`.
-constexpr const_array<int> myFixedArray = { 1, 2, 3, 4 };
+constexpr const_array<int, 4> myFixedArray = { 1, 2, 3, 4 };
 
 void useImmutableArray() {
   // This prints the following to the terminal:
@@ -18,7 +18,7 @@ void useImmutableArray() {
   Serial.print(myFixedArray.size());
   Serial.println(" items:");
 
-  // const_array<T> supports the iterator interface:
+  // const_array<T, N> supports the iterator interface:
   for (int *it = myFixedArray.begin(); it != myFixedArray.end(); it++) {
     Serial.print(*it);
     Serial.print(" ");
@@ -28,7 +28,7 @@ void useImmutableArray() {
 }
 
 // Create an expandable array of Strings.
-// const_array<T>, vector<T> work with any basic scalar types or classes.
+// const_array<T, N>, vector<T> work with any basic scalar types or classes.
 vector<String> someStrings;
 
 void setup() {

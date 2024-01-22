@@ -29,6 +29,9 @@ namespace tc {
   public:
     constexpr const_array(const_array<T, N> &other) = default;
 
+    /** Move constructor; essentially the same as "copy" since `other` remains immutable. */
+    constexpr const_array(const_array<T, N> &&other) noexcept = default;
+
     // No copy operator; array components are fixed.
     const_array<T, N> &operator=(const_array<T, N> &copy_src) = delete;
 
@@ -64,6 +67,9 @@ namespace tc {
   template<typename T> class const_array<T, 0> {
   public:
     constexpr const_array() = default;
+    constexpr const_array(const_array<T, 0> &other) = default;
+    constexpr const_array(const_array<T, 0> &&other) noexcept = default;
+
     const_array<T, 0> &operator=(const_array<T, 0> &copy_src) = delete;
     const_array<T, 0> &operator=(const_array<T, 0> &&move_src) = delete;
 

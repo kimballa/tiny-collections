@@ -22,12 +22,10 @@ for embedded programming where compiled code space is at a premium.
   with O(1) random and sequential access, O(1) item-append time, and O(n) mid-list
   insertion and removal time. If necessary, the backing array may be resized by allocating a larger
   array and relocating existing elements with `memmove()`.
-* **tc::const_array&lt;T&gt;** - A fixed-length immutable array of `const` items of type `T`
-  Like `vector`, this class supports indexed access, iteration, and reporting on its size.
-  Since access is only given to elements as `const T&`, and the `const_array` class does
-  not assume ownership of the `T` elements (i.e., its destructor will not call `~T()` on
-  its elements) this can be created as a `constexpr` object that wraps a brace-initialized
-  list of items.
+* **tc::const_array&lt;T, N&gt;** - A fixed-length immutable array of `N` `const` items of type
+  `T`. Like `vector`, this class supports indexed access, iteration, and reporting on its
+  size.  Since access is only given to elements as `const T&`, this can be created as a
+  `constexpr` object that wraps a brace-initialized list of items.
 
 Usage
 -----
@@ -64,7 +62,7 @@ using namespace tc; // Import tc::* into the global namespace
 // Create a const int array and wrap it in a useful interface.
 // This is similar to declaring `const int myFixedArray[4] = { 1, 2, 3, 4 };`
 // but lets you use methods like `size()`.
-constexpr const_array<int> myFixedArray = { 1, 2, 3, 4 };
+constexpr const_array<int, 4> myFixedArray = { 1, 2, 3, 4 };
 
 void useImmutableArray() {
   // This prints the following to the terminal:
@@ -76,7 +74,7 @@ void useImmutableArray() {
   Serial.print(myFixedArray.size());
   Serial.println(" items:");
 
-  // const_array<T> supports the iterator interface:
+  // const_array<T, N> supports the iterator interface:
   for (int *it = myFixedArray.begin(); it != myFixedArray.end(); it++) {
     Serial.print(*it);
     Serial.print(" ");
@@ -86,7 +84,7 @@ void useImmutableArray() {
 }
 
 // Create an expandable array of Strings.
-// const_array<T>, vector<T> work with any basic scalar types or classes.
+// const_array<T, N>, vector<T> work with any basic scalar types or classes.
 vector<String> someStrings;
 
 void setup() {
@@ -120,31 +118,23 @@ void loop() {
 Interface
 ---------
 
-### tc::const\_array&lt;T&gt;
+### tc::const\_array&lt;T, N&gt;
 
 ```c++
-template<typename T> class const_array {
+template<typename T, size_t N> class const_array {
 public:
-  /** Construct a zero-length array. */
-  constexpr const_array();
+  // note: all constructors are implicit defaults since this is an aggregate.
 
-  /** Copy constructor. */
-  constexpr const_array(const const_array<T> &other);
-
-  /** Copy constructor from explicit array. */
-  template<size_t N> constexpr const_array(const T (&arr)[N]);
-
-  /** Copy constructor from brace-initialized list. */
-  constexpr const_array(std::initializer_list<T> lst);
-
+  /** Default copy constructor. */
+  constexpr const_array(const_array<T, N> &other) = default;
   /** Move constructor; essentially the same as "copy" since `other` remains immutable. */
-  constexpr const_array(const_array<T> &&other) noexcept;
+  constexpr const_array(const_array<T> &&other) noexcept = default;
 
-  // No copy operator; array components are fixed.
-  const_array<T> &operator=(const_array<T> &copy_src) = delete;
+  // No receive-copy operator; array components are fixed.
+  const_array<T, N> &operator=(const_array<T, N> &copy_src) = delete;
 
-  // No move operator; array components are fixed.
-  const_array<T> &operator=(const_array<T> &&move_src) = delete;
+  // No receive-move operator; array components are fixed.
+  const_array<T, N> &operator=(const_array<T, N> &&move_src) = delete;
 
   // Indexed dereference to `const` elements.
   const T& operator[](size_t idx) const;
