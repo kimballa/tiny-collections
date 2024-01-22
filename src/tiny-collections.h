@@ -19,60 +19,76 @@
 
 namespace tc {
 
-  /////////////////       const_array<T>     /////////////////
+  /////////////////       const_array<T, N>     /////////////////
 
 
   // A wrapper around a statically-defined array of const items, of known size.
   // This wrapper does not manage the data elements nor will it deallocate them when it goes out of
   // scope.
-  template<typename T> class const_array {
+  template<typename T, size_t N> class const_array {
   public:
-    constexpr const_array(): _count(0), _data(NULL) { };
-
-    /** Copy constructor. */
-    constexpr const_array(const const_array<T> &other): _count(other._count), _data(other._data) {};
-
-    /** Copy constructor from explicit array. */
-    template<size_t N> constexpr const_array(const T (&arr)[N]): _count(N), _data(arr) {};
-
-    /** Copy constructor from brace-initialized list. */
-    constexpr const_array(std::initializer_list<T> lst): _count(lst.size()), _data(lst.begin()) { };
-
-    /** Move constructor; essentially the same as "copy" since `other` remains immutable. */
-    constexpr const_array(const_array<T> &&other) noexcept: _count(other._count), _data(other._data) {};
+    constexpr const_array(const_array<T, N> &other) = default;
 
     // No copy operator; array components are fixed.
-    const_array<T> &operator=(const_array<T> &copy_src) = delete;
+    const_array<T, N> &operator=(const_array<T, N> &copy_src) = delete;
 
     // No move operator; array components are fixed.
-    const_array<T> &operator=(const_array<T> &&move_src) = delete;
+    const_array<T, N> &operator=(const_array<T, N> &&move_src) = delete;
 
     const T& operator[](size_t idx) const {
       return _data[idx];
     };
 
-    size_t size() const { return _count; }; // number of valid elements.
-    size_t capacity() const { return _count; }; // number of memory slots provisioned in array.
-    bool empty() const { return _count == 0; };
+    size_t size() const { return N; }; // number of valid elements.
+    size_t capacity() const { return N; }; // number of memory slots provisioned in array.
+    bool empty() const { return N == 0; };
 
     /** Return true if you can use this subscript index safely. */
     bool in_range(size_t idx) const {
-      return idx >= 0 && idx < _count;
+      return idx >= 0 && idx < N;
     };
 
     // C++ iterator interface.
     const T* begin() const {
-      return &(_data[0]);
+      return _data;
     };
 
     const T* end() const {
-      return &(_data[_count]);
+      return &(_data[N]);
     };
 
-  private:
-    size_t _count; // number of filled slots.
-    const T *const _data; // ptr to immutable data.
+    const T _data[N]; // array of immutable data.
   }; // class const_array<T>
+
+  // Specialization for zero-length array.
+  template<typename T> class const_array<T, 0> {
+  public:
+    constexpr const_array() = default;
+    const_array<T, 0> &operator=(const_array<T, 0> &copy_src) = delete;
+    const_array<T, 0> &operator=(const_array<T, 0> &&move_src) = delete;
+
+    const T& operator[](size_t idx) const {
+      return *((T*)NULL); // invalid operation.
+    };
+
+    size_t size() const { return 0; }; // number of valid elements.
+    size_t capacity() const { return 0; }; // number of memory slots provisioned in array.
+    bool empty() const { return true; };
+
+    /** Return true if you can use this subscript index safely. */
+    bool in_range(size_t idx) const {
+      return false;
+    };
+
+    // C++ iterator interface.
+    const T* begin() const {
+      return NULL;
+    };
+
+    const T* end() const {
+      return NULL;
+    };
+  }; // class const_array<T, 0>
 
 
 
@@ -120,7 +136,8 @@ namespace tc {
     };
 
     /** Copy constructor from const_array<T>. */
-    vector(const const_array<T> &arr): _count(arr.size()), _capacity(arr.size()) {
+    template<size_t N>
+    vector(const const_array<T, N> &arr): _count(arr.size()), _capacity(arr.size()) {
       _data = reinterpret_cast<T*>(new unsigned char[sizeof(T) * _capacity]);
       // Initialize elements via placement-new copy constructor.
       for (size_t i = 0; i < _count; i++) {
@@ -187,7 +204,8 @@ namespace tc {
     };
 
     // Copy operator: duplicate the elements of a const_array<T>
-    vector<T> &operator=(const const_array<T> &copy_src) {
+    template<size_t N>
+    vector<T> &operator=(const const_array<T, N> &copy_src) {
       _deallocate(); // free existing _data (if any) first.
 
       _count = copy_src.size();

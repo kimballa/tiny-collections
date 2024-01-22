@@ -264,9 +264,28 @@ void testVector() {
   longVecCopy[2] = -42;
   expectEqual("Modified copy[2] = -42", (long)-42, longVecCopy[2]);
   expectEqual("Original copy[2] = 3", (long)3, longVec[2]); // shouldn't change.
-
-
 }
+
+void testConstArray() {
+  startTestSuite("ConstArray");
+
+  const_array<int, 0> empty;
+  expectEqual("empty array size", (size_t)0, empty.size());
+  expectEqual("empty isEmpty", (bool)true, empty.empty());
+
+  const_array<int, 0> empty2 = {};
+  expectEqual("empty array size", (size_t)0, empty2.size());
+  expectEqual("empty2 isEmpty", (bool)true, empty2.empty());
+
+  const_array<int, 4> nums = { 1, 2, 3, 4 };
+  expectEqual("number array size", (size_t)4, nums.size());
+  expectEqual("number array elt 2", 3, nums[2]);
+
+  const_array<int, 4> copy = nums;
+  expectEqual("copy array size", (size_t)4, copy.size());
+  expectEqual("copy array elt 3", 4, copy[3]);
+}
+
 
 int main(int argc, char **argv) {
   cout << std::boolalpha; // pretty-print 'true' and 'false'.
@@ -278,6 +297,7 @@ int main(int argc, char **argv) {
 
   testTypeTraits();
   testVector();
+  testConstArray();
 
   cout << "Ran " << testRuns << " test cases." << endl;
   if (testFailures == 0) {
