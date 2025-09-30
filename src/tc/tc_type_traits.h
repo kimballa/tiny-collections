@@ -95,7 +95,7 @@ namespace tc {
     public tc_is_member_pointer<F C::*> {};
 
   template<typename T> class tc_is_null_pointer: public tc_false_type {};
-  template<> class tc_is_null_pointer<nullptr_t>: public tc_true_type {};
+  template<> class tc_is_null_pointer<decltype(nullptr)>: public tc_true_type {};
   template<typename T2> class tc_is_null_pointer<const T2>: public tc_is_null_pointer<T2> {};
   template<typename T2> class tc_is_null_pointer<volatile T2>: public tc_is_null_pointer<T2> {};
   template<typename T2> class tc_is_null_pointer<const volatile T2>: public tc_is_null_pointer<T2> {};

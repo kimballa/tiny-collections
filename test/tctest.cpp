@@ -193,6 +193,10 @@ void testTypeTraits() {
       tc_is_null_pointer<const volatile nullptr_t>::value());
   evalTestcase("IsNullPointer(volatile const nullptr_t)", true,
       tc_is_null_pointer<volatile const nullptr_t>::value());
+  evalTestcase("IsNullPointer(int)", false,
+      tc_is_null_pointer<int>::value());
+  evalTestcase("IsNullPointer(int*)", false,
+      tc_is_null_pointer<int*>::value());
 
 
   evalTestcase("IsScalar(int)", true, tc_is_scalar<int>::value());;
